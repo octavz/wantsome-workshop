@@ -7,7 +7,6 @@ import doobie._
 import doobie.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import actions._
-import doobie.h2._
 import org.h2.tools.Server
 
 object Main extends IOApp {
@@ -16,12 +15,13 @@ object Main extends IOApp {
   val dbName = "lists"
 
   private def startConsole(dbName: String) = IO {
+    ExprOps.eval(IntExpr(1))
     val server = Server.createTcpServer("-tcpPort", "30000").start()
     println("URL: jdbc:h2:" + server.getURL() + "/mem:" + dbName)
   }
 
   override def run(args: List[String]): IO[ExitCode] =
-    TransactorProvider[IO].transactor[H2Transactor[IO]](dbName).use { implicit xa =>
+    TransactorProvider[IO].transactor(dbName).use { implicit xa =>
       for {
         _ <- startConsole(dbName)
         _ <- DDL[ConnectionIO].database.transact(xa)
@@ -35,5 +35,4 @@ object Main extends IOApp {
           .as(ExitCode.Success)
       } yield exitCode
     }
-
 }

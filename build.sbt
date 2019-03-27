@@ -10,7 +10,7 @@ val catsVersion = "1.5.0"
 val log4catsVersion = "0.2.0"
 val doobieVersion = "0.6.0"
 
-addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full)
 
 scalacOptions ++= Seq("-Ypartial-unification", "-language:higherKinds")
 
@@ -32,9 +32,12 @@ libraryDependencies ++= Seq(
   "com.github.mpilquist" %% "simulacrum" % "0.15.0",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "com.h2database" % "h2" % "1.4.199" % Compile,
+  "io.estatico" %% "newtype" % "0.4.2",
   "org.fusesource.jansi" % "jansi" % "1.8" % Runtime,
   "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
   "org.scalatest" %% "scalatest" % "3.0.5" % Test)
 
 mainClass in reStart := Some("org.wantsome.backend.Server")
+
+initialCommands in console := "import org.wantsome.backend.actions._"
 

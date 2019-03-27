@@ -10,8 +10,8 @@ import simulacrum.typeclass
 }
 
 object DDL {
-  implicit def instanceDDL[F[_]]: DDL[ConnectionIO] =
-    new DDL[ConnectionIO[F]] {
+  implicit def instanceDDL[F]: DDL[ConnectionIO] =
+    new DDL[ConnectionIO] {
       override def database: ConnectionIO[Unit] =
         for {
           _ <- user
