@@ -2,46 +2,61 @@ package org.wantsome.backend
 
 import doobie.util.Get
 import doobie.util.Put
-import io.circe._
-import io.circe.generic.auto._
-import io.circe.syntax._
 import io.estatico.newtype.macros.newtype
+import io.estatico.newtype.ops._
 import org.scalacheck.Arbitrary
 
 object Models {
 
-  @newtype case class UserId(id: String)
+  @newtype class UserId(val toStr: String)
 
   object UserId {
+    def apply(id: String): UserId = id.coerce[UserId]
+
     implicit val arb: Arbitrary[UserId] = deriving
     implicit val get: Get[UserId]       = deriving
     implicit val put: Put[UserId]       = deriving
   }
 
-  @newtype case class SessionId(id: String)
+  @newtype class SessionId(val toStr: String)
 
   object SessionId {
+    def apply(id: String): SessionId = id.coerce[SessionId]
+
     implicit val arb: Arbitrary[SessionId] = deriving
     implicit val get: Get[SessionId]       = deriving
     implicit val put: Put[SessionId]       = deriving
   }
 
 
-  @newtype case class ItemId(id: String)
+  @newtype class ItemId(private val id: String)
 
   object ItemId {
+    def apply(id: String): ItemId = id.coerce[ItemId]
+
     implicit val arb: Arbitrary[ItemId] = deriving
     implicit val get: Get[ItemId]       = deriving
     implicit val put: Put[ItemId]       = deriving
   }
 
-  @newtype case class ListId(id: String)
+  @newtype class ListId(private val id: String)
 
-  @newtype case class ListItemId(id: String)
+  object ListId {
+    type MId = ListId
 
+    def apply(id: String): MId = id.coerce[MId]
 
-  implicit val getSessionId                 = Get[String].map(SessionId.apply)
-  implicit val putSessionId: Put[SessionId] = Put[String].contramap(_.id)
+    implicit val arb: Arbitrary[MId] = deriving
+    implicit val get: Get[MId]       = deriving
+    implicit val put: Put[MId]       = deriving
+
+  }
+
+  @newtype case class ListItemId(private val id: String)
+
+  object ListItemId {
+
+  }
 
 
   case class User(id: UserId, email: String, password: String)

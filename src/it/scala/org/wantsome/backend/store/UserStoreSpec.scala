@@ -10,51 +10,26 @@ import doobie.implicits._
 import org.scalacheck.Arbitrary
 import org.scalatest._
 import org.wantsome.backend.Models.User
-import io.estatico.newtype.macros.newtype
 import io.estatico.newtype.ops._
+import io.estatico.newtype.macros.newtype
 import cats._
 import cats.data.ContT
 import org.wantsome.backend.Models._
 import org.wantsome.backend.util.RandomProvider
 
-/*object TestOps {
 
-  @newtype class Test[T](val toIO: IO[T])
-
-  object Test {
-    def apply[A](io: IO[A]): Test[A] = io.coerce[Test[A]]
-
-    implicit val functor: Functor[Test] = derivingK
-
-
-  }
-
-    implicit def deriveTest(conIO: ContextShift[IO]) = new ContextShift[Test] {
-      override def shift: Test[Unit] = conIO.shift.coerce[Test[Unit]]
-
-
-      override def evalOn[A](aec: ExecutionContext)(fa: Test[A]): Test[A] =
-        conIO.evalOn(aec)(fa.toIO).coerce[Test[A]]
-
-    }
-
-}*/
-
-class UserOpsSpec extends FlatSpec with Matchers {
+class UserStoreSpec extends FlatSpec with Matchers {
   behavior of "UserOps"
 
-
   trait Context {
-
-    import org.scalacheck.ScalacheckShapeless._
 
     implicit val ec                             = ExecutionContext.Implicits.global
     implicit val contextShift: ContextShift[IO] = IO.contextShift(ec)
 
-
     val rand = RandomProvider[ConnectionIO]
 
-    def randomUser = (rand.uuid.map(_.coerce[UserId]), rand.uuid, rand.uuid).mapN(User.apply)
+    def randomUser =
+      (rand.uuid.map(UserId.apply), rand.uuid, rand.uuid).mapN(User.apply)
 
     def dbOps[A](dbName: String = "test") = ContT {
       (cb: Transactor[IO] => IO[A]) =>
@@ -64,14 +39,14 @@ class UserOpsSpec extends FlatSpec with Matchers {
         }
     }
 
-    val userOps = UserOps[ConnectionIO]
+    val store = UserStore[ConnectionIO]
   }
 
   it should "correctly create an user" in new Context {
     val (expected, Some(actual)) = dbOps().run { xa =>
       val run = for {
         ru <- randomUser
-        u <- userOps.createUser(ru)
+        u <- store.createUser(ru)
         r <- sql"select id,email,password from user where id=${u.id}".query[User].option
       } yield (u, r)
       run.transact(xa)
@@ -84,8 +59,8 @@ class UserOpsSpec extends FlatSpec with Matchers {
     val (expected, Some(actual)) = dbOps().run { xa =>
       val run = for {
         ru <- randomUser
-        u <- userOps.createUser(ru)
-        r <- userOps.getUserById(u.id)
+        u <- store.createUser(ru)
+        r <- store.getUserById(u.id)
       } yield (u, r)
       run.transact(xa)
     }.unsafeRunSync()
@@ -95,14 +70,14 @@ class UserOpsSpec extends FlatSpec with Matchers {
 
   it should "correctly return None when no user found when searching by id" in new Context {
     val actual = dbOps().run { xa =>
-      userOps.getUserById("test".coerce[UserId]).transact(xa)
+      store.getUserById(UserId("test")).transact(xa)
     }.unsafeRunSync()
     actual shouldBe 'empty
   }
 
   it should "correctly return None when no user found by when searching by email" in new Context {
     val actual = dbOps().run { xa =>
-      userOps.findUserByEmail("test").transact(xa)
+      store.findUserByEmail("test").transact(xa)
     }.unsafeRunSync()
     actual shouldBe 'empty
   }
@@ -111,8 +86,8 @@ class UserOpsSpec extends FlatSpec with Matchers {
     val (expected, Some(actual)) = dbOps().run { xa =>
       val run = for {
         ru <- randomUser
-        u <- userOps.createUser(ru)
-        r <- userOps.findUserByEmail(u.email)
+        u <- store.createUser(ru)
+        r <- store.findUserByEmail(u.email)
       } yield (u, r)
       run.transact(xa)
     }.unsafeRunSync()
@@ -124,8 +99,8 @@ class UserOpsSpec extends FlatSpec with Matchers {
     val (session, Some(id)) = dbOps().run { xa =>
       val run = for {
         ru <- randomUser
-        _ <- userOps.createUser(ru)
-        s <- userOps.createSession(ru)
+        _ <- store.createUser(ru)
+        s <- store.createSession(ru)
         r <- sql"select id from session where id=${s.id}".query[SessionId].option
       } yield (s, r)
       run.transact(xa)
@@ -138,9 +113,9 @@ class UserOpsSpec extends FlatSpec with Matchers {
     val (expected, Some(actual)) = dbOps().run { xa =>
       val run = for {
         ru <- randomUser
-        s <- userOps.createUser(ru)
-        s <- userOps.createSession(ru)
-        r <- userOps.getSessionById(s.id)
+        s <- store.createUser(ru)
+        s <- store.createSession(ru)
+        r <- store.getSessionById(s.id)
       } yield (s, r)
       run.transact(xa)
     }.unsafeRunSync()
@@ -150,7 +125,7 @@ class UserOpsSpec extends FlatSpec with Matchers {
 
   it should "correctly return None when no session foun when searching by id" in new Context {
     val actual = dbOps().run { xa =>
-      userOps.getSessionById("test".coerce[SessionId]).transact(xa)
+      store.getSessionById(SessionId("test")).transact(xa)
     }.unsafeRunSync()
 
     actual shouldBe 'empty

@@ -1,10 +1,13 @@
-package org.wantsome.backend.logic
+package org.wantsome.backend
+package logic
 
 import org.wantsome.backend.Models.SessionId
 
-sealed trait LoginResponse extends Throwable
+sealed trait LoginResponse
 
 case object UserNotFound extends LoginResponse
 
-case class Ok(sessionId: SessionId) extends LoginResponse
+case object LoginFailed extends LoginResponse
+
+case class LoginOk(sessionId: SessionId) extends LoginResponse
 

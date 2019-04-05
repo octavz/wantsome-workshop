@@ -3,10 +3,13 @@ package org.wantsome.backend
 import scala.util.Properties.envOrNone
 import cats.implicits._
 import cats.effect._
+import cats.effect.implicits._
 import doobie._
 import doobie.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import util._
+import doobie._
+import doobie.implicits._
 import org.h2.tools.Server
 import store._
 
@@ -22,13 +25,14 @@ object Main extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] =
     TransactorProvider[IO].transactor(dbName).use { implicit xa =>
+      implicit val toIO = xa.trans
       for {
         _ <- startConsole(dbName)
         _ <- DDL[ConnectionIO].database.transact(xa)
         port <- IO(envOrNone("HTTP_PORT").map(_.toInt).getOrElse(8080))
         exitCode <- BlazeServerBuilder[IO]
           .bindHttp(port, "localhost")
-          .withHttpApp(Routes.service)
+          .withHttpApp(Routes.service[IO])
           .serve
           .compile
           .drain

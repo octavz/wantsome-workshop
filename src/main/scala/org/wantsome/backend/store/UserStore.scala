@@ -6,7 +6,7 @@ import simulacrum.typeclass
 import org.wantsome.backend.Models._
 import org.wantsome.backend.util.RandomProvider
 
-@typeclass trait UserOps[F[_]] {
+@typeclass trait UserStore[F[_]] {
 
   def createSession(user: User): F[Session]
 
@@ -20,8 +20,8 @@ import org.wantsome.backend.util.RandomProvider
 
 }
 
-object UserOps {
-  implicit val userOpsDoobieInst = new UserOps[ConnectionIO] {
+object UserStore {
+  implicit def userStore = new UserStore[ConnectionIO] {
     val R = RandomProvider[ConnectionIO]
 
     override def createSession(user: User) =
@@ -45,4 +45,5 @@ object UserOps {
     override def findUserByEmail(email: String) =
       sql"select id, email, password from user where email=$email".query[User].option
   }
+
 }

@@ -13,6 +13,7 @@ lazy val root = project.in(file("."))
     organization := "org.wantsome",
     version := "0.0.1-SNAPSHOT",
     scalaVersion := "2.12.8",
+    fork in Test := false,
     scalacOptions ++= Seq("-Ypartial-unification", "-language:higherKinds"),
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
     addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.8"),
@@ -40,7 +41,7 @@ lazy val root = project.in(file("."))
       "com.github.alexarchambault" %% "scalacheck-shapeless_1.14" % "1.2.0",
       "org.scalacheck" %% "scalacheck" % "1.14.0",
       "org.scalatest" %% "scalatest" % "3.0.5"),
-    mainClass in reStart := Some("org.wantsome.backend.Server"),
+    mainClass in reStart := Some("org.wantsome.backend.Main"),
     initialCommands in console := "import org.wantsome.backend.actions._",
     Defaults.itSettings)
 
