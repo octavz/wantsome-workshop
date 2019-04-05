@@ -1,4 +1,4 @@
-package org.wantsome.backend.actions
+package org.wantsome.backend.store
 
 import cats.effect._
 import cats.implicits._

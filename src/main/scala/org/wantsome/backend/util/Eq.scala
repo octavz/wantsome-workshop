@@ -1,5 +1,5 @@
 package org.wantsome.backend
-package actions
+package util
 
 import simulacrum.typeclass
 import io.estatico.newtype.macros.newtype

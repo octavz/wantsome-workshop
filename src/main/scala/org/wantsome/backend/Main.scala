@@ -6,8 +6,9 @@ import cats.effect._
 import doobie._
 import doobie.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
-import actions._
+import util._
 import org.h2.tools.Server
+import store._
 
 object Main extends IOApp {
 
@@ -15,7 +16,6 @@ object Main extends IOApp {
   val dbName = "lists"
 
   private def startConsole(dbName: String) = IO {
-    ExprOps.eval(IntExpr(1))
     val server = Server.createTcpServer("-tcpPort", "30000").start()
     println("URL: jdbc:h2:" + server.getURL() + "/mem:" + dbName)
   }

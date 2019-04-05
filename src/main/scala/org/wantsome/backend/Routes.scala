@@ -16,8 +16,7 @@ object Routes {
     import dsl._
 
     HttpRoutes.of[F] {
-      case GET -> Root / "json" / name =>
-        Ok(MyData(name).asJson)
+      case POST -> Root / "session"  => ???
     }.orNotFound
   }
 
